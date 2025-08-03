@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Malla Curricular - Abogacía UNS</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Nunito', sans-serif;
+      background-color: #FAF5EF;
+      color: #5C3A2E;
+    }
+    h1, h2 {
+      font-family: 'Quicksand', sans-serif;
+      color: #A9746E;
+    }
+    .container {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+    }
+    .year {
+      background-color: #E8D8C3;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .semester {
+      margin-bottom: 15px;
+    }
+    .subject {
+      background-color: #FAF5EF;
+      border: 2px solid #A9746E;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin: 5px 0;
+      cursor: pointer;
+      position: relative;
+      transition: background-color 0.3s;
+    }
+    .subject.approved {
+      background-color: #8B4A3B;
+      color: white;
+    }
+    .subject.locked {
+      background-color: #ddd;
+      color: #999;
+      cursor: not-allowed;
+    }
+    .subject.locked::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: 0;
+      left: 100%;
+      margin-left: 5px;
+      background: #5C3A2E;
+      color: #fff;
+      padding: 3px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      font-size: 12px;
+      display: none;
+    }
+    .subject.locked:hover::after {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center">Universidad Nacional del Sur<br>ABOGACÍA</h1>
+  <div class="container" id="mallaContainer"></div>
+  <script>
+    const subjects = {
+      // PRIMER AÑO
+      '9098': { name: 'EVOLUCION INSTITUCIONAL DEL DERECHO', year: 1, sem: 1 },
+      '4675': { name: 'HISTORIA CONSTITUCIONAL', year: 1, sem: 1 },
+      '9001': { name: 'INTRODUCCION AL DERECHO', year: 1, sem: 1 },
+      '9004': { name: 'DERECHO PRIVADO-PARTE GENERAL', year: 1, sem: 2, req: ['9001'] },
+      '4758': { name: 'INTRODUCCION A LAS CIENCIAS SOCIALES', year: 1, sem: 2 },
+      '2395': { name: 'SOCIOLOGIA', year: 1, sem: 2 },
+      '9107': { name: 'TALLER DE TECNICAS DE ACCESO A LA INFORMACION JURIDICA', year: 1, sem: 2 },
+
+      // SEGUNDO AÑO
+      '9005': { name: 'DERECHO CONSTITUCIONAL', year: 2, sem: 1, req: ['4675', '9001'] },
+      '9093': { name: 'DERECHOS HUMANOS', year: 2, sem: 1 },
+      '2109': { name: 'ECONOMIA', year: 2, sem: 1 },
+      '4809': { name: 'TALLER DE DISCURSO ARGUMENTATIVO', year: 2, sem: 1 },
+      '9105': { name: 'TEORIA DEL CONFLICTO Y METODOS DE RESOLUCION', year: 2, sem: 1 },
+      '9055': { name: 'CIENCIA POLITICA', year: 2, sem: 2 },
+      '9006': { name: 'DERECHO DE LAS OBLIGACIONES', year: 2, sem: 2, req: ['9004', '9098'] },
+      '9008': { name: 'DERECHO PENAL I', year: 2, sem: 2, req: ['9001', '9005'] },
+      '9110': { name: 'TALLER DE NEGOCIACION Y METODOS DE RESOLUCION DE CONFLICTOS', year: 2, sem: 2, req: ['9105'] },
+
+      // TERCER AÑO
+      '9019': { name: 'DERECHO DE LOS CONTRATOS', year: 3, sem: 1, req: ['9004', '9006'] },
+      '9018': { name: 'DERECHO PENAL II', year: 3, sem: 1, req: ['9005', '9008', '9093'] },
+      '9104': { name: 'DERECHO PROCESAL CIVIL Y COMERCIAL', year: 3, sem: 1, req: ['9004', '9006'] },
+      '9139': { name: 'ETICA D', year: 3, sem: 1, req: ['9001'] },
+      '9109': { name: 'TALLER DE INTERPRETACION DE LA LEY Y ANALISIS DE JURISPRUDENCIA', year: 3, sem: 1, req: ['4809'] },
+      '9007': { name: 'DERECHO ADMINISTRATIVO I', year: 3, sem: 2, req: ['9005', '9093'] },
+      '9101': { name: 'DERECHO DE SOCIEDADES', year: 3, sem: 2, req: ['9006'] },
+      '9049': { name: 'DERECHO PROCESAL PENAL', year: 3, sem: 2, req: ['9008', '9018'] },
+      '9010': { name: 'DERECHOS REALES E INTELECTUALES', year: 3, sem: 2, req: ['9004', '9006'] },
+      '9111': { name: 'TALLER DE LITIGACION ORAL', year: 3, sem: 2, req: ['4809'] },
+
+      // CUARTO AÑO
+      '9102': { name: 'DERECHO DE DAÑOS Y SEGUROS', year: 4, sem: 1, req: ['9005', '9019'] },
+      '9033': { name: 'DERECHO DEL TRABAJO Y SEGURIDAD SOCIAL D', year: 4, sem: 1, req: ['9005', '9019'] },
+      '9020': { name: 'FILOSOFIA DEL DERECHO', year: 4, sem: 1, req: ['9001'] },
+      '9113': { name: 'TALLER DE DERECHO PROCESAL ADMINISTRATIVO', year: 4, sem: 1, req: ['9007', '9104'] },
+      '9106': { name: 'DERECHO DEL CONSUMIDOR', year: 4, sem: 2, req: ['9019'] },
+      '9022': { name: 'DERECHO INTERNACIONAL PUBLICO', year: 4, sem: 2, req: ['9005', '9093'] },
+      '9099': { name: 'DERECHO, ECONOMIA Y COMPORTAMIENTO', year: 4, sem: 2, req: ['2109', '9019', '9102', '9104'] },
+      '9114': { name: 'TALLER DE PRACTICA CIVIL Y COMERCIAL', year: 4, sem: 2, req: ['9104', '90111'] },
+      '9112': { name: 'TALLER DE PRACTICA PENAL', year: 4, sem: 2, req: ['9018', '9049', '9111'] },
+
+      // QUINTO AÑO
+      '9012': { name: 'DERECHO ADMINISTRATIVO II', year: 5, sem: 1, req: ['9007', '9102'] },
+      '9016': { name: 'DERECHO DE FAMILIA Y SUCESIONES', year: 5, sem: 1, req: ['9019', '9101', '9102', '9104'] },
+      '9100': { name: 'DERECHO TRIBUTARIO', year: 5, sem: 1, req: ['9007', '9018', '9104', '9113'] },
+      '9015': { name: 'DERECHO AMBIENTAL Y DE LOS RECURSOS NATURALES', year: 5, sem: 2, req: ['9007', '9019', '9102', '9104'] },
+      '9103': { name: 'DERECHO BANCARIO', year: 5, sem: 2, req: ['9019', '9101', '9104', '9106'] },
+      '9013': { name: 'DERECHO CONCURSAL', year: 5, sem: 2, req: ['9019', '9033', '9101', '9104'] },
+      '9023': { name: 'DERECHO INTERNACIONAL PRIVADO', year: 5, sem: 2, req: ['9016', '9101'] },
+      '9140': { name: 'PRACTICA PROFESIONAL SUPERVISADA D', year: 5, sem: 2, req: [] },
+      '9115': { name: 'TALLER DE INVESTIGACIÓN JURIDICA', year: 5, sem: 2, req: ['9109'] },
+      '9116': { name: 'TALLER DE PRACTICA PROFESIONAL SUPERVISADA', year: 5, sem: 2, req: [] },
+      '9141': { name: 'TRABAJO DE INVESTIGACION FINAL', year: 5, sem: 2, req: ['9115'] }
+    };
+
+    const approved = new Set(JSON.parse(localStorage.getItem('aprobadas')) || []);
+
+    function canUnlock(code) {
+      const s = subjects[code];
+      if (!s.req || s.req.length === 0) return true;
+      return s.req.every(r => approved.has(r));
+    }
+
+    function saveProgress() {
+      localStorage.setItem('aprobadas', JSON.stringify([...approved]));
+    }
+
+    function toggleSubject(code, element) {
+      if (element.classList.contains('locked')) return;
+      if (approved.has(code)) {
+        approved.delete(code);
+        element.classList.remove('approved');
+      } else {
+        approved.add(code);
+        element.classList.add('approved');
+      }
+      saveProgress();
+      renderMalla();
+    }
+
+    function renderMalla() {
+      const container = document.getElementById('mallaContainer');
+      container.innerHTML = '';
+      for (let year = 1; year <= 5; year++) {
+        const yearDiv = document.createElement('div');
+        yearDiv.className = 'year';
+        const title = document.createElement('h2');
+        title.textContent = `Año ${year}`;
+        yearDiv.appendChild(title);
+        for (let sem = 1; sem <= 2; sem++) {
+          const semDiv = document.createElement('div');
+          semDiv.className = 'semester';
+          const semTitle = document.createElement('h3');
+          semTitle.textContent = sem === 1 ? '1° Cuatrimestre' : '2° Cuatrimestre';
+          semDiv.appendChild(semTitle);
+
+          for (const [code, subject] of Object.entries(subjects)) {
+            if (subject.year === year && subject.sem === sem) {
+              const subjDiv = document.createElement('div');
+              subjDiv.className = 'subject';
+              subjDiv.textContent = subject.name;
+              if (approved.has(code)) {
+                subjDiv.classList.add('approved');
+              } else if (!canUnlock(code)) {
+                subjDiv.classList.add('locked');
+                subjDiv.dataset.tooltip = 'Requiere: ' + subject.req.map(r => subjects[r]?.name || r).join(', ');
+              }
+              subjDiv.addEventListener('click', () => toggleSubject(code, subjDiv));
+              semDiv.appendChild(subjDiv);
+            }
+          }
+          yearDiv.appendChild(semDiv);
+        }
+        container.appendChild(yearDiv);
+      }
+    }
+
+    renderMalla();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito&family=Quicksand:wght@600&display=swap" rel="stylesheet">
+</body>
+</html>
